@@ -5,12 +5,12 @@ type Rand struct {
 	seed uint32
 }
 
-// Construct a new Rand given a seed
+// New constructs a new Rand given a seed
 func New(seed uint32) Rand {
 	return Rand{seed: seed}
 }
 
-// Write a stream of uint32s to the given channel
+// Uint32s writes a stream of uint32s to the given channel
 func (r Rand) Uint32s(output chan<- uint32) {
 	seed := r.seed
 	for {
