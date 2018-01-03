@@ -24,20 +24,21 @@ func normals(uint32s <-chan uint32) fixed.Int26_6 {
 		x := xs[i]
 		// use u as a fixed point from [0..1)
 		z := fixed.I26F(0, u).Mul(x)
-		if z < xs[i] {
+		if i != c-1 && z < xs[i+1] {
 			// in bulk, this path should happen very frequently
 			return z
 		} else if i == 0 {
-			// tail
+			//
+			return z
 		} else {
 			// wedge
 			u1 := int32(<-uint32s)
-			f := fs[i] - fs[i+1]
+			f := fs[i-1] - fs[i]
 			if f < 0 {
 				f = -1 * f
 			}
 			y := fixed.I26F(0, u1).Mul(f)
-			if y < ms[i]*(z-x) {
+			if y < ms[i-1]*(z-x) {
 				return y
 			}
 		}
