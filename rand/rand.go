@@ -17,9 +17,7 @@ func (r Rand) Uint32s(output chan<- uint32) {
 		a := seed ^ (seed << 13)
 		b := a ^ (a >> 17)
 		c := b ^ (b << 5)
-		go func() {
-			output <- c
-		}()
+		output <- c
 		seed = c
 	}
 }
