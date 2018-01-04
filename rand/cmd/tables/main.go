@@ -9,6 +9,7 @@ import (
 
 const (
 	c = 256
+	r = 3.442619855899
 )
 
 func f(x float64) float64 {
@@ -76,5 +77,7 @@ func main() {
 	printVar("xs", xs)
 	printVar("ys", ys)
 	printVar("ms", ms)
+	fmt.Printf("r = %d\n", host.I26Float64(r))
+	fmt.Printf("rInv = %d\n", host.I26Float64(1.0/r))
 
 }
