@@ -44,6 +44,9 @@ func normals(uint32s <-chan uint32) fixed.Int26_6 {
 		z := fixed.I26F(0, u).Mul(x)
 		if i != c-1 && z < xs[i+1] {
 			// in bulk, this path should happen very frequently
+			if u < 0 {
+				return -1 * z
+			}
 			return z
 		} else if i == 0 {
 			// Tail
@@ -67,6 +70,9 @@ func normals(uint32s <-chan uint32) fixed.Int26_6 {
 			}
 			y := fixed26(uint32s).Mul(f)
 			if y < ms[i-1]*(z-x) {
+				if u < 0 {
+					return -1 * y
+				}
 				return y
 			}
 		}
