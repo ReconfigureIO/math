@@ -30,7 +30,9 @@ func normals(uint32s <-chan uint32) fixed.Int26_6 {
 
 	ms := [c]fixed.Int26_6{0, -14, -18, -20, -22, -24, -25, -26, -27, -28, -29, -30, -31, -31, -32, -32, -33, -33, -34, -34, -34, -35, -35, -35, -36, -36, -36, -36, -36, -37, -37, -37, -37, -37, -37, -37, -38, -38, -38, -38, -38, -38, -38, -38, -38, -38, -38, -38, -38, -38, -38, -38, -38, -38, -38, -38, -38, -38, -38, -38, -38, -38, -38, -38, -38, -38, -38, -38, -38, -38, -38, -38, -37, -37, -37, -37, -37, -37, -37, -37, -37, -37, -36, -36, -36, -36, -36, -36, -36, -36, -36, -35, -35, -35, -35, -35, -35, -35, -35, -34, -34, -34, -34, -34, -34, -34, -33, -33, -33, -33, -33, -33, -32, -32, -32, -32, -32, -32, -31, -31, -31, -31, -31, -31, -30, -30, -30, -30, -30, -30, -29, -29, -29, -29, -29, -28, -28, -28, -28, -28, -27, -27, -27, -27, -27, -26, -26, -26, -26, -26, -25, -25, -25, -25, -25, -24, -24, -24, -24, -24, -23, -23, -23, -23, -22, -22, -22, -22, -22, -21, -21, -21, -21, -20, -20, -20, -20, -20, -19, -19, -19, -19, -18, -18, -18, -18, -18, -17, -17, -17, -17, -16, -16, -16, -16, -15, -15, -15, -15, -14, -14, -14, -14, -13, -13, -13, -13, -12, -12, -12, -12, -11, -11, -11, -11, -10, -10, -10, -10, -9, -9, -9, -9, -8, -8, -8, -8, -7, -7, -7, -7, -6, -6, -6, -5, -5, -5, -5, -4, -4, -4, -4, -3, -3, -3, -3, -2, -2, -2, -1, -1, -1, -1, 0, 0, 0}
 
-	for {
+	keepGoing := true
+	var out fixed.Int26_6
+	for keepGoing {
 		u := int32(<-uint32s)
 		// the index we'll use
 		i := u & mask
@@ -38,25 +40,28 @@ func normals(uint32s <-chan uint32) fixed.Int26_6 {
 		// use u as a fixed point from [0..1)
 		z := fixed.I26F(0, u).Mul(x)
 		if i != c-1 && z < xs[i+1] {
+			keepGoing = false
 			// in bulk, this path should happen very frequently
 			if u < 0 {
-				return -1 * z
+				out = -1 * z
+			} else {
+				out = z
 			}
-			return z
 		} else if i == 0 {
 			// Tail
 			var x2 fixed.Int26_6
-			for {
+			for keepGoing {
 				x2 := -log(fixed26(uint32s)).Mul(rInv)
 				y := -log(fixed26(uint32s)) << 1
 				if y >= x2*x2 {
-					break
+					keepGoing = false
 				}
 			}
 			if u > 0 {
-				return r + x2
+				out = r + x2
+			} else {
+				out = -r - x2
 			}
-			return -r - x2
 		} else {
 			// wedge
 			f := fs[i-1] - fs[i]
@@ -65,14 +70,17 @@ func normals(uint32s <-chan uint32) fixed.Int26_6 {
 			}
 			y := fixed26(uint32s).Mul(f)
 			if y < ms[i-1]*(z-x) {
+				keepGoing = false
 				if u < 0 {
-					return -1 * y
+					out = -1 * y
+				} else {
+					out = y
 				}
-				return y
 			}
 		}
 
 	}
+	return out
 }
 
 // Normals writes a stream of Int26_6, normally distributed
