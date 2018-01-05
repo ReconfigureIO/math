@@ -23,7 +23,7 @@ func fInv(y float64) float64 {
 func printVar(varName string, vals []float64) {
 	fmt.Printf("%s = {", varName)
 	for i, v := range vals {
-		if i != c-1 {
+		if i != len(vals)-1 {
 			fmt.Printf("%d, ", int32(host.I26Float64(v)))
 		} else {
 			fmt.Printf("%d}\n", int32(host.I26Float64(v)))
@@ -79,5 +79,16 @@ func main() {
 	printVar("ms", ms)
 	fmt.Printf("r = %d\n", host.I26Float64(r))
 	fmt.Printf("rInv = %d\n", host.I26Float64(1.0/r))
+
+	log2 := math.Log(2)
+
+	const logs = 32
+	lns := make([]float64, logs, logs)
+	start := float64(0.5)
+	for i := 0; i < logs; i++ {
+		lns[i] = log2 + math.Log(start)
+		start += 0.5 / 32
+	}
+	printVar("lns", lns)
 
 }

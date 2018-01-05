@@ -1,10 +1,7 @@
 package rand
 
 import (
-	"math"
-
 	"github.com/ReconfigureIO/fixed"
-	"github.com/ReconfigureIO/fixed/host"
 )
 
 const (
@@ -21,11 +18,9 @@ func fixed26(us <-chan uint32) fixed.Int26_6 {
 	return fixed.I26F(0, int32(<-us))
 }
 
+// restricted ln from [0, 1) using a 32 lookup table
 func log(x fixed.Int26_6) fixed.Int26_6 {
-	if x <= 0 {
-		return 0
-	}
-	return host.I26Float64(math.Log(float64(x) / float64(1<<6)))
+	return [32]fixed.Int26_6{0, 1, 3, 5, 7, 9, 10, 12, 14, 15, 17, 18, 20, 21, 23, 24, 25, 27, 28, 29, 31, 32, 33, 34, 35, 36, 38, 39, 40, 41, 42, 43}[(x>>1)&0x1f]
 }
 
 func normals(uint32s <-chan uint32) fixed.Int26_6 {
