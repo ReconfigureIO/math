@@ -38,7 +38,8 @@ func normals(uint32s <-chan uint32) fixed.Int26_6 {
 		i := u & mask
 		x := xs[i]
 		// use u as a fixed point from [0..1)
-		z := fixed.I26F(0, u).Mul(x)
+		t := fixed.I26F(0, u)
+		z := t.Mul(x)
 		if i != c-1 && z < xs[i+1] {
 			keepGoing = false
 			// in bulk, this path should happen very frequently
@@ -51,7 +52,8 @@ func normals(uint32s <-chan uint32) fixed.Int26_6 {
 			// Tail
 			var x2 fixed.Int26_6
 			for keepGoing {
-				x2 := -log(fixed26(uint32s)).Mul(rInv)
+				t := -log(fixed26(uint32s))
+				x2 := t.Mul(rInv)
 				y := -log(fixed26(uint32s)) << 1
 				if y >= x2*x2 {
 					keepGoing = false
@@ -68,7 +70,8 @@ func normals(uint32s <-chan uint32) fixed.Int26_6 {
 			if f < 0 {
 				f = -1 * f
 			}
-			y := fixed26(uint32s).Mul(f)
+			t := fixed26(uint32s)
+			y := t.Mul(f)
 			if y < ms[i-1]*(z-x) {
 				keepGoing = false
 				if u < 0 {
