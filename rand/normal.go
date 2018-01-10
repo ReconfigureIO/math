@@ -58,9 +58,9 @@ func (rand Rand) Normals(output chan<- fixed.Int26_6) {
 				var x2 fixed.Int26_6
 				for keepGoing {
 					t := -log(fixed26(uint32s))
-					x2 := t.Mul(rInv)
+					x2 = t.Mul(rInv)
 					y := -log(fixed26(uint32s)) << 1
-					if y >= x2*x2 {
+					if y >= x2.Mul(x2) {
 						keepGoing = false
 					}
 				}
@@ -77,7 +77,8 @@ func (rand Rand) Normals(output chan<- fixed.Int26_6) {
 				}
 				t := fixed26(uint32s)
 				y := t.Mul(f)
-				if y < ms[i-1]*(z-x) {
+				m := ms[i-1]
+				if y < m.Mul(z-x) {
 					keepGoing = false
 					if u < 0 {
 						out = -y
