@@ -62,20 +62,31 @@ func main() {
 	for i, x := range xs {
 		ys[i] = f(x)
 	}
+	fs := make([]float64, c, c)
+	for i := range ys {
+		if i > 0 {
+			t := ys[i-1] - ys[i]
+			if t < 0 {
+				t = -t
+			}
+			fs[i] = t * 16
+		} else {
+			fs[i] = 0
+		}
+	}
 
 	bs := make([]float64, c, c)
 	for i := 1; i < c; i++ {
 		dy := ys[i] - ys[i-1]
 		bs[i] = ((2 / dy) * (dy * fInv((ys[i]+ys[i-1])/2))) - xs[i-1]
 	}
-
 	ms := make([]float64, c, c)
 	for i := 1; i < c-1; i++ {
 		ms[i] = (ys[i] - ys[i+1]) / (xs[i] - bs[i+1])
 	}
 
 	printVar("xs", xs)
-	printVar("ys", ys)
+	printVar("fs", fs)
 	printVar("ms", ms)
 	fmt.Printf("r = %d\n", host.I26Float64(r))
 	fmt.Printf("rInv = %d\n", host.I26Float64(1.0/r))
