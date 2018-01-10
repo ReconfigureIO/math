@@ -44,7 +44,7 @@ func normals(uint32s <-chan uint32) fixed.Int26_6 {
 			keepGoing = false
 			// in bulk, this path should happen very frequently
 			if u < 0 {
-				out = -1 * z
+				out = -z
 			} else {
 				out = z
 			}
@@ -68,14 +68,14 @@ func normals(uint32s <-chan uint32) fixed.Int26_6 {
 			// wedge
 			f := fs[i-1] - fs[i]
 			if f < 0 {
-				f = -1 * f
+				f = -f
 			}
 			t := fixed26(uint32s)
 			y := t.Mul(f)
 			if y < ms[i-1]*(z-x) {
 				keepGoing = false
 				if u < 0 {
-					out = -1 * y
+					out = -y
 				} else {
 					out = y
 				}
