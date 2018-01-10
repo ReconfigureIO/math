@@ -24,7 +24,7 @@ func TestNormals(t *testing.T) {
 	}
 	mean := sums / iterations
 	stddev := math.Sqrt((iterations*squares - sums*sums) / (iterations * (iterations - 1)))
-	if mean != 0 || stddev != 1 {
-		t.Errorf("Expected a mean of 0 & stddev of 1, got %f & %f", mean, stddev)
+	if math.Abs(mean) > 0.001 || math.Abs(1-stddev) > 0.2 {
+		t.Errorf("Expected a mean of ~0 & stddev of ~1, got %f & %f", mean, stddev)
 	}
 }
