@@ -85,22 +85,27 @@ func main() {
 		ms[i] = (ys[i] - ys[i+1]) / (xs[i] - bs[i+1])
 	}
 
-	conv := func(x float64) int32 {
-		return int32(host.I26Float64(x))
+	conv := func(x float64) uint8 {
+		return uint8(int32(host.I26Float64(x)))
 	}
 
 	fmt.Printf("%s = {", "params")
 	for i, x := range xs {
-		xNext := float64(4)
+		xNext := uint8(255)
 		if i != len(xs)-1 {
-			xNext = xs[i+1]
+			t := xs[i+1]
+			xNext = conv(t)
 		}
 		m := float64(0)
 		if i != 0 {
 			m = ms[i-1]
 		}
 
-		fmt.Printf("{%d,%d,%d,%d}, ", conv(x), conv(fs[i]), conv(m), conv(xNext))
+		out := (uint32(conv(x)) << 24)
+		out |= uint32(conv(fs[i])) << 16
+		out |= uint32(conv(m)) << 8
+		out |= uint32(xNext)
+		fmt.Printf("%d, ", out)
 	}
 	fmt.Printf("}\n")
 	fmt.Printf("r = %d\n", host.I26Float64(r))
