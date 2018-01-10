@@ -43,7 +43,7 @@ func (rand Rand) Normals(output chan<- fixed.Int26_6) {
 			i := u & mask
 			x := xs[i]
 			// use u as a fixed point from [0..1)
-			t := fixed.I26F(0, u)
+			t := fixed.I26F(0, int32(uint32(u)>>6))
 			z := t.Mul(x)
 			if i != c-1 && z < xs[i+1] {
 				keepGoing = false
