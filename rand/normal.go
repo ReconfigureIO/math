@@ -14,10 +14,6 @@ const (
 // Modified Ziggurat Algorithm based upon the paper
 // "Hardware-Optimized Ziggurat Algorithm for High-Speed Gaussian Random Number Generators"
 
-func fixed26(us <-chan uint32) fixed.Int26_6 {
-	return fixed.I26F(0, int32(<-us))
-}
-
 // restricted ln from [0, 1) using a 32 lookup table
 func log(x fixed.Int26_6) fixed.Int26_6 {
 	return [32]fixed.Int26_6{0, 1, 3, 5, 7, 9, 10, 12, 14, 15, 17, 18, 20, 21, 23, 24, 25, 27, 28, 29, 31, 32, 33, 34, 35, 36, 38, 39, 40, 41, 42, 43}[(x>>1)&0x1f]
@@ -71,9 +67,9 @@ func (rand Rand) Normals(output chan<- fixed.Int26_6) {
 				// Tail
 				var x2 fixed.Int26_6
 				for keepGoing {
-					t := -log(fixed26(uint32s))
+					t := -log(fixed.I26F(0, int32(<-uint32s)))
 					x2 = t.Mul(rInv)
-					y := -log(fixed26(uint32s)) << 1
+					y := -log(fixed.I26F(0, int32(<-uint32s))) << 1
 					if y >= x2.Mul(x2) {
 						keepGoing = false
 					}
@@ -88,7 +84,7 @@ func (rand Rand) Normals(output chan<- fixed.Int26_6) {
 
 				// This is actually a 22.10
 				f := fixed.Int26_6(p.F)
-				t := fixed26(uint32s)
+				t := fixed.I26F(0, int32(<-uint32s))
 
 				// Resulting fixed point mult will be a (22 + 26).(10 + 6), so we shift 10 and then cast to get us back to 26.6
 				y := fixed.Int26_6((uint64(f) * uint64(t)) >> 10)
