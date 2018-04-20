@@ -14,9 +14,20 @@ const (
 // Modified Ziggurat Algorithm based upon the paper
 // "Hardware-Optimized Ziggurat Algorithm for High-Speed Gaussian Random Number Generators"
 
+// 2.6 width integer
+type I6 int8
+
+func I6F(a int8) I6 {
+	return I6(a & 0x3f)
+}
+
+func (a I6) Mul(b I6) I6 {
+	return I6((int16(a) * int16(b)) >> 6)
+}
+
 // restricted ln from [0, 1) using a 32 lookup table
-func log(x fixed.Int26_6) fixed.Int26_6 {
-	return [32]fixed.Int26_6{0, 1, 3, 5, 7, 9, 10, 12, 14, 15, 17, 18, 20, 21, 23, 24, 25, 27, 28, 29, 31, 32, 33, 34, 35, 36, 38, 39, 40, 41, 42, 43}[(x>>1)&0x1f]
+func log(x I6) I6 {
+	return [32]I6{-0, -1, -3, -5, -7, -9, -10, -12, -14, -15, -17, -18, -20, -21, -23, -24, -25, -27, -28, -29, -31, -32, -33, -34, -35, -36, -38, -39, -40, -41, -42, -43}[(x>>1)&0x1f]
 }
 
 type param struct {
@@ -43,50 +54,59 @@ func (rand Rand) Normals(output chan<- fixed.Int26_6) {
 		// Unpacking should be nearly free
 		p := param{uint8(tmp >> 24), uint8(tmp >> 16), int8(tmp >> 8), uint8(tmp)}
 
-		x := fixed.Int26_6(p.X)
+		// 2.6
+		x := I6(p.X)
 
 		// use u as a fixed point from [0..1)
-		t := fixed.I26F(0, int32(uint32(u)>>6))
-		z := t.Mul(x)
 
-		if z < fixed.Int26_6(p.XNext) {
+		// 0.6
+		t := I6F(int8(uint32(u) >> 6))
+
+		z := (int16(t) * int16(x)) >> 6
+
+		if z < int16(p.XNext) {
 			// Bulk, this path should happen very frequently
 			if u < 0 {
-				output <- -z
+				output <- -fixed.Int26_6(z)
 			} else {
-				output <- z
+				output <- fixed.Int26_6(z)
 			}
 		} else if i == 0 {
 			// Tail
-			var x2 fixed.Int26_6
+			var x2 int16
 			k := true
 			for k {
-				t := -log(fixed.I26F(0, int32(<-uint32s)))
-				x2 = t.Mul(rInv)
-				y := -log(fixed.I26F(0, int32(<-uint32s))) << 1
-				k = y < x2.Mul(x2)
+				t := log(I6F(int8(<-uint32s)))
+
+				x2 = (int16(t) * int16(rInv)) >> 6
+				y := log(I6F(int8(<-uint32s))) << 1
+				k = int16(y) < ((x2 * x2) >> 6)
 			}
 			if u < 0 {
-				output <- -r - x2
+				output <- fixed.Int26_6(-r - x2)
 			} else {
-				output <- r + x2
+				output <- fixed.Int26_6(r + x2)
 			}
 		} else {
 			// wedge
 
 			// This is actually a 22.10
-			f := fixed.Int26_6(p.F)
-			t := fixed.I26F(0, int32(<-uint32s))
+			f := int8(p.F)
+
+			t := I6F(int8(<-uint32s))
+
+			check := int16(p.M) * (z - int16(x))
 
 			// Resulting fixed point mult will be a (22 + 26).(10 + 6), so we shift 10 and then cast to get us back to 26.6
-			y := fixed.Int26_6((uint64(f) * uint64(t)) >> 10)
-			m := fixed.Int26_6(p.M)
+			// 0.8
 
-			if y < m.Mul(z-x) {
+			y := (int16(f) * int16(t)) >> 10
+
+			if y < check {
 				if u < 0 {
-					output <- -y
+					output <- fixed.Int26_6(-y)
 				} else {
-					output <- y
+					output <- fixed.Int26_6(y)
 				}
 			}
 		}
