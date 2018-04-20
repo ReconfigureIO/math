@@ -21,3 +21,10 @@ func (r Rand) Uint32s(output chan<- uint32) {
 		seed = c
 	}
 }
+
+func (r Rand) Iteration() uint32 {
+	seed := r.seed
+	a := seed ^ (seed << 13)
+	b := a ^ (a >> 17)
+	return b ^ (b << 5)
+}

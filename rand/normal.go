@@ -39,8 +39,16 @@ type param struct {
 
 // Normals writes a stream of Int26_6, normally distributed
 func (rand Rand) Normals(output chan<- fixed.Int26_6) {
+	a := rand.Iteration()
+
 	uint32s := make(chan uint32, 1)
+	tailUs := make(chan uint32, 1)
+
+	tailRand := New(a)
+
 	go rand.Uint32s(uint32s)
+
+	go tailRand.Uint32s(tailUs)
 
 	for {
 		u := int32(<-uint32s)
@@ -76,10 +84,10 @@ func (rand Rand) Normals(output chan<- fixed.Int26_6) {
 			var x2 int16
 			k := true
 			for k {
-				t := log(I6F(int8(<-uint32s)))
+				t := log(I6F(int8(<-tailUs)))
 
 				x2 = (int16(t) * int16(rInv)) >> 6
-				y := log(I6F(int8(<-uint32s))) << 1
+				y := log(I6F(int8(<-tailUs))) << 1
 				k = int16(y) < ((x2 * x2) >> 6)
 			}
 			if u < 0 {
@@ -90,16 +98,14 @@ func (rand Rand) Normals(output chan<- fixed.Int26_6) {
 		} else {
 			// wedge
 
-			// This is actually a 22.10
 			f := int8(p.F)
 
 			t := I6F(int8(<-uint32s))
 
+			// This is actually a 22.10
 			check := int16(p.M) * (z - int16(x))
 
 			// Resulting fixed point mult will be a (22 + 26).(10 + 6), so we shift 10 and then cast to get us back to 26.6
-			// 0.8
-
 			y := (int16(f) * int16(t)) >> 10
 
 			if y < check {
