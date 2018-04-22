@@ -75,7 +75,7 @@ func (rand Rand) Normals(output chan<- fixed.Int26_6) {
 		if z < int16(p.XNext) {
 			// Bulk, this path should happen very frequently
 			if negate {
-				output <- -fixed.Int26_6(-z)
+				output <- fixed.Int26_6(-z)
 			} else {
 				output <- fixed.Int26_6(z)
 			}
