@@ -91,8 +91,8 @@ func main() {
 
 	fmt.Printf("%s = {", "params")
 	for i, x := range xs {
-		xNext := uint8(255)
-		if i != len(xs)-1 {
+		xNext := uint8(0)
+		if i != len(xs)-1 && i != 0 {
 			t := xs[i+1]
 			xNext = conv(t)
 		}
