@@ -91,9 +91,9 @@ func main() {
 
 	fmt.Printf("%s = {", "params")
 	for i, x := range xs {
-		xNext := uint8(255)
-		if i != len(xs)-1 {
-			t := ((x / xs[i+1]) * (1 << 8))
+		xNext := uint8(0)
+		if i != 0 {
+			t := ((xs[i-1] / xs[i]) * (1 << 8))
 			xNext = uint8(t)
 		}
 		m := float64(0)
