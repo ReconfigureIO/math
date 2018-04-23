@@ -86,10 +86,15 @@ func (rand Rand) Normals(output chan<- fixed.Int26_6) {
 			var x2 int16
 			k := true
 			for k {
-				t := log(I6F(int8(<-tailUs)))
-
+				var vars [2]I6
+				rand := <-tailUs
+				for i := 0; i < 2; i++ {
+					vars[i] = log(I6F(int8(rand)))
+					rand = rand >> 6
+				}
+				t := vars[0]
 				x2 = (int16(t) * int16(rInv)) >> 6
-				y := log(I6F(int8(<-tailUs))) << 1
+				y := vars[1] << 1
 				k = int16(y) < ((x2 * x2) >> 6)
 			}
 			if negate {
